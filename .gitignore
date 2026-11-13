@@ -1,0 +1,34 @@
+# Model weights -- published as release assets, never committed
+*.pt
+*.ckpt
+
+# Data and predictions
+*.nii
+*.nii.gz
+data/
+
+# Hydra / Lightning run output
+logs/
+outputs/
+multirun/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.eggs/
+
+# Environments
+.venv/
+venv/
+env/
+
+# Tooling
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+.vscode/
+.idea/
+.DS_Store

@@ -1,0 +1,40 @@
+# CASITA label map -- maps each dataset's raw segmentation integers onto the
+# shared 9-channel output space. One row per (protocol, raw_label).
+#
+# channel: 0=background 1=CSF 2=cortical GM 3=white matter 4=ventricles
+#          5=cerebellum 6=deep GM 7=brainstem/spinal cord 8=hippocampi+amygdalae
+#
+# Training on your own cohort:
+#   - Annotations follow one of the three protocols below? Add rows under that
+#     protocol name using YOUR raw label integers.
+#   - Adding a NEW protocol name changes the conditioning width, so the
+#     published CASITA weights will not load and you must train from scratch.
+#   - Raw labels you omit fall to background (channel 0).
+protocol,raw_label,channel
+drawem9_albert,0,0
+drawem9_albert,1,1
+drawem9_albert,2,2
+drawem9_albert,3,3
+drawem9_albert,4,0
+drawem9_albert,5,4
+drawem9_albert,6,5
+drawem9_albert,7,6
+drawem9_albert,8,7
+drawem9_albert,9,8
+feta,0,0
+feta,1,1
+feta,2,2
+feta,3,3
+feta,4,4
+feta,5,5
+feta,6,6
+feta,7,7
+bobs9,0,0
+bobs9,2,2
+bobs9,3,3
+bobs9,4,0
+bobs9,5,4
+bobs9,6,5
+bobs9,7,6
+bobs9,8,7
+bobs9,9,8

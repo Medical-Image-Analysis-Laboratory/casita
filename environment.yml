@@ -1,0 +1,19 @@
+# Conda environment for CASITA.
+#
+# Dependencies are declared once, in pyproject.toml -- this file only pins the
+# interpreter and installs the package, so the two can never disagree.
+#
+#   conda env create -f environment.yml
+#   conda activate casita
+#
+# This installs the CPU build of PyTorch. For GPU training, install torch for
+# your CUDA version first (see https://pytorch.org/get-started/locally/), then
+# run `pip install -e .[train]`.
+name: casita
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - -e .[train]

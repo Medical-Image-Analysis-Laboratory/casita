@@ -1,0 +1,79 @@
+# @package _global_
+# Joint multi-protocol training with CASITA (FiLM-conditioned UNet).
+# Run with:
+#   CASITA_DATA_ROOT=/path/to/data python casita/train.py experiment=casita
+
+defaults:
+  - override /data: multiprotocol_datamodule
+  - override /model: casita_segmentor
+  - override /callbacks: default
+  - override /trainer: default
+
+task_name: casita_joint_uniform
+
+# ── Callbacks: override metric names (CASITA logs val/dice, not val/dsc) ───
+callbacks:
+  model_checkpoint:
+    filename: "epoch_{epoch:03d}_val_dice_{val/dice:.4f}_step_{step}"
+    monitor: "val/dice"
+    mode: "max"
+
+# ── Trainer ──────────────────────────────────────────────────────────────────
+trainer:
+  accelerator: gpu
+  devices: 1
+  max_epochs: 1000
+  precision: 16-mixed
+  check_val_every_n_epoch: 5
+
+# ── Data ─────────────────────────────────────────────────────────────────────
+data:
+  train_type: real
+  val_type: real
+  #transforms: null
+
+  generator:
+    device: cuda:0
+    simulate_motion: null
+    boundaries: null
+    struct_noise: null
+    blur_cortex: null
+
+  train_split: train
+  val_split: val
+  test_split: test_i
+
+  datasets:
+    - bids_path:      ${oc.env:CASITA_DATA_ROOT}/feta_2.4/resampled75/
+      split_file:     ${oc.env:CASITA_DATA_ROOT}/feta_2.4/splits_40_10_15_35.csv
+      protocol_name:  feta
+
+    - bids_path:      ${oc.env:CASITA_DATA_ROOT}/CHUV_fetal/resampled75/
+      split_file:     ${oc.env:CASITA_DATA_ROOT}/CHUV_fetal/splits_40_10_15_35.csv
+      protocol_name:  feta
+      img_suffix:     rec-mial_T2w
+      seg_suffix:     rec-mial_dseg
+
+    - bids_path:      ${oc.env:CASITA_DATA_ROOT}/fetalDHCP/resampled75/
+      split_file:     ${oc.env:CASITA_DATA_ROOT}/fetalDHCP/resampled75/splits_40_10_15_35.csv
+      protocol_name:  drawem9_albert
+      img_suffix:     T2w
+      seg_suffix:     desc-drawem9_dseg
+
+    - bids_path:      ${oc.env:CASITA_DATA_ROOT}/neonates_dHCP/resampled75/
+      split_file:     ${oc.env:CASITA_DATA_ROOT}/neonates_dHCP/resampled75/splits_40_10_15_35.csv
+      protocol_name:  drawem9_albert
+      img_suffix:     T2w
+      seg_suffix:     desc-drawem9_dseg
+
+    - bids_path:      ${oc.env:CASITA_DATA_ROOT}/neonatal_bobsV1.0/resampled75/
+      split_file:     ${oc.env:CASITA_DATA_ROOT}/neonatal_bobsV1.0/resampled75/splits_40_10_15_35.csv
+      protocol_name:  bobs9
+      img_suffix:     space-INFANTMNIacpc_T2w
+      seg_suffix:     space-INFANTMNIacpc_desc-bobs9_dseg
+
+  label_map_csv: ${paths.work_dir}/configs/label_map_multiprotocol.csv
+  num_workers: 0
+  batch_size: 2
+
+seed: 42

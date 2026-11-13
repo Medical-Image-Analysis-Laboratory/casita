@@ -1,0 +1,19 @@
+# The image is inference-only: configs/ and scripts/ are training-side.
+configs/
+scripts/
+environment.yml
+
+.git/
+.gitignore
+**/__pycache__/
+**/*.py[cod]
+*.egg-info/
+build/
+dist/
+
+*.pt
+*.ckpt
+*.nii
+*.nii.gz
+logs/
+outputs/

@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "casita"
+version = "1.0.0"
+description = "Conditioning Across protocols for Segmentation of Infant and feTal brAins"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Daniela Correa Orozco" },
+    { name = "Vladyslav Zalevskyi" },
+    { name = "Thomas Sanchez" },
+    { name = "Meritxell Bach Cuadra" },
+]
+keywords = ["segmentation", "fetal MRI", "neonatal MRI", "annotation protocols", "FiLM"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+
+# Inference only: predict.py drives the UNet directly, so it needs neither
+# lightning nor the synthetic-data generator stack. Keeping this set small is
+# what lets the Docker image stay lean.
+dependencies = [
+    "torch>=2.0",
+    "monai>=1.3",
+    "nibabel>=5.0",
+    "numpy>=1.24",
+    "scipy>=1.10",
+]
+
+[project.optional-dependencies]
+# Everything training additionally needs: the Lightning loop, the Hydra config
+# tree, and the fetalsyngen-derived augmentation pipeline under casita/synthgen.
+train = [
+    "lightning>=2.1",
+    "torchmetrics>=1.0",
+    "hydra-core>=1.3",
+    "omegaconf>=2.3",
+    "rootutils>=1.0",
+    "pandas>=2.0",
+    "torchio>=0.19",
+    "SimpleITK>=2.2",
+    "scikit-image>=0.22",
+    "rich>=13.0",
+]
+
+[project.scripts]
+casita-predict = "casita.predict:main"
+
+[project.urls]
+Repository = "https://github.com/Medical-Image-Analysis-Laboratory/casita"
+
+[tool.setuptools.packages.find]
+include = ["casita*"]
+
+# Training is run from a repo checkout, not from an installed package:
+# train.py relies on rootutils finding .project-root and on Hydra resolving
+# config_path="../configs" relative to the source tree. Only predict.py is
+# designed to work as an installed console script.

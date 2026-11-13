@@ -1,0 +1,40 @@
+_target_: casita.models.casita_segmentor.CASITASegmentor
+
+# Number of foreground output channels == max(channel) in label_map_csv.
+# With the current label_map_multiprotocol.csv this is 8.
+num_fg_channels: 8
+
+# Ordered list of protocol names, matching the first-seen order in the
+# datamodule's `datasets` list (= MultiProtocolDataset.protocol_registry).
+# Order MUST match the `datasets` list in the experiment config (first-seen = index 0).
+# Experiment configs/experiment/casita.yaml has feta first.
+protocol_names:
+  - feta
+  - drawem9_albert
+  - bobs9
+
+label_map_csv: ${paths.work_dir}/configs/label_map_multiprotocol.csv
+
+net:
+  _target_: casita.models.casita_unet.CASITAUNet
+  num_protocols: 3
+  num_fg_channels: ${model.num_fg_channels}
+  n_levels: 4
+  n_features_init: 16
+  feat_mult: 2
+  n_conv_per_level: 2
+  conv_size: 3
+  norm_type: null           # null | "batch" | "instance"
+  n_conditioned_layers: 0   # 0 = all layers conditioned
+  mlp_hidden_dim: 64
+  mlp_n_layers: 4
+
+optimizer:
+  _target_: torch.optim.Adam
+  _partial_: true
+  weight_decay: 0.0
+
+scheduler: null
+
+compile: false
+lr: 0.0001

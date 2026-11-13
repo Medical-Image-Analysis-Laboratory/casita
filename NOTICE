@@ -1,0 +1,41 @@
+CASITA
+Copyright (c) 2025 Medical Image Analysis Laboratory
+Licensed under the MIT License. See LICENSE.
+
+--------------------------------------------------------------------------
+Third-party code included in this repository
+--------------------------------------------------------------------------
+
+Everything under casita/synthgen/ is derived from FetalSynGen
+
+    https://github.com/Medical-Image-Analysis-Laboratory/fetalsyngen
+
+which is licensed under the Apache License, Version 2.0. A copy of that
+licence is included at licenses/Apache-2.0.txt. Those files remain under
+Apache-2.0; the rest of this repository is MIT.
+
+Vendored at commit 88442ce74b8541ba9b1b4c718699650b644b7c7c:
+
+    casita/synthgen/data/datasets.py
+    casita/synthgen/generator/model.py
+    casita/synthgen/generator/intensity/rand_gmm.py
+    casita/synthgen/generator/deformation/affine_nonrigid.py
+    casita/synthgen/generator/augmentation/synthseg.py
+    casita/synthgen/generator/augmentation/artifacts.py
+    casita/synthgen/generator/artifacts/simulate_reco.py
+    casita/synthgen/generator/artifacts/utils.py
+    casita/synthgen/utils/image_reading.py
+    casita/synthgen/utils/generation.py
+
+Modifications made to those files:
+
+  * import paths rewritten from `fetalsyngen.*` to `casita.synthgen.*`
+  * `pd.read_csv(label_map_csv)` reads with `comment="#"` so the documented
+    label-map template parses
+
+No other changes. The SVoRT subpackage and the slice-acquisition CUDA
+extension are not included: they are reachable only from super-resolution
+artifact simulation, which CASITA does not use.
+
+FetalSynGen is itself based on SynthSeg, Brain-ID and SVoRT; see the upstream
+repository for its own attributions.
