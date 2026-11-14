@@ -33,6 +33,8 @@ FROM python:${PYTHON_VERSION}-slim
 # The PyTorch CUDA wheels bundle their own CUDA runtime, so a plain slim base
 # works for both variants -- only the host driver and container toolkit differ.
 ARG TORCH_INDEX=https://download.pytorch.org/whl/cpu
+# Pinned: an unpinned install picks up whatever CUDA version is newest on build day.
+ARG TORCH_VERSION=2.5.1
 
 WORKDIR /opt/casita
 
@@ -42,7 +44,7 @@ COPY casita/ casita/
 
 # torch first, from the selected index; the second install then sees the
 # requirement already satisfied and pulls only monai/nibabel/numpy/scipy.
-RUN pip install --no-cache-dir torch --index-url ${TORCH_INDEX} \
+RUN pip install --no-cache-dir "torch==${TORCH_VERSION}" --index-url ${TORCH_INDEX} \
     && pip install --no-cache-dir .
 
 # Optionally bake the released weights (~6 MB) into the image. Downloaded with

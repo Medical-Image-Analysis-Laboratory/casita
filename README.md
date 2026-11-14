@@ -19,8 +19,8 @@ three conventions include different structures.
 ```bash
 git clone https://github.com/Medical-Image-Analysis-Laboratory/casita
 cd casita
-pip install .            # inference
-pip install -e .[train]  # inference + training
+pip install .              # inference
+pip install -e ".[train]"  # inference + training
 ```
 
 Conda users: `conda env create -f environment.yml`.
@@ -53,6 +53,8 @@ docker run --rm -v "$PWD":/data \
     scan.nii.gz --protocol feta --output seg.nii.gz
 ```
 
+Roughly 30 s per scan on six CPU cores.
+
 On HPC, convert it to Apptainer/Singularity first:
 
 ```bash
@@ -61,19 +63,54 @@ apptainer run --bind "$PWD":/data casita.sif \
     scan.nii.gz --protocol feta --output seg.nii.gz
 ```
 
-The published image is CPU-only — around 1–3 minutes per scan, versus ~7 s on a
-GPU. To build a CUDA image yourself:
+### Building a GPU image
+
+Only the CPU image is published, because a CUDA image has to be built against a
+specific CUDA version and no single choice works everywhere. Building your own
+takes one command, but pick the CUDA version to match your driver.
+
+**1. Check what your driver supports:**
 
 ```bash
-docker build -t casita:gpu \
+nvidia-smi | grep "CUDA Version"
+```
+
+**2. Build with a matching index and torch version.** The index must be one your
+driver can run — a CUDA 12.4 build needs driver ≳ 525, and a build newer than
+your driver fails. `TORCH_VERSION` must exist on that index:
+
+```bash
+docker build -t casita:gpu-cu124 \
     --build-arg TORCH_INDEX=https://download.pytorch.org/whl/cu124 \
-    --build-arg WEIGHTS_URL=<url of casita.pt from the releases page> .
-docker run --rm --gpus all -v "$PWD":/data casita:gpu \
+    --build-arg TORCH_VERSION=2.5.1 \
+    --build-arg WEIGHTS_URL=https://github.com/Medical-Image-Analysis-Laboratory/casita/releases/download/v1.0.0/casita.pt .
+```
+
+Available indexes are listed at <https://download.pytorch.org/whl/> (`cu121`,
+`cu124`, `cu126`, …); each has a `torch/` page showing which versions it carries.
+Omit `WEIGHTS_URL` to leave the weights out, then mount a `.pt` and pass
+`--weights` at run time.
+
+**3. Run it.** `--gpus all` needs the NVIDIA container toolkit registered with
+Docker (`sudo nvidia-ctk runtime configure --runtime=docker && sudo systemctl
+restart docker`):
+
+```bash
+docker run --rm --gpus all -v "$PWD":/data casita:gpu-cu124 \
     scan.nii.gz --protocol feta --output seg.nii.gz
 ```
 
-Omit `WEIGHTS_URL` to build without weights, then mount a `.pt` and pass
-`--weights` at run time.
+**4. Check it used the GPU.** The first output line names the device. `device: cpu`
+means CUDA failed to initialise and it fell back silently — still correct, just
+slower. To see why:
+
+```bash
+docker run --rm --gpus all --entrypoint python casita:gpu-cu124 -c \
+    "import torch; print(torch.__version__, torch.version.cuda, torch.cuda.is_available())"
+```
+
+`False` with a CUDA version above your driver's means the index was too new;
+rebuild with a lower one.
 
 ## Output labels
 
@@ -98,8 +135,7 @@ never appear in its output.
 
 ## The three protocols
 
-They disagree about what a label *means*. The
-clearest case is the ventricles:
+They disagree about what a label *means*. The clearest case is the ventricles:
 
 | protocol | ventricle label includes | source cohorts |
 |---|---|---|
@@ -145,11 +181,9 @@ defaults to 0; raising it speeds up training, but augmentation runs on the GPU
 inside the data pipeline, so each worker holds its own CUDA context (increase
 it only if you have GPU memory to spare!).
 
-
 ## Scope
 
-This repository contains training and inference only. The evaluation harness,
-statistical analysis, and no subject-level data of any kind ships here.
+Training and inference only. No evaluation code and no subject-level data ship here.
 
 ## Attribution
 
