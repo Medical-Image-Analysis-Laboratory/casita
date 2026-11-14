@@ -9,8 +9,8 @@ one model reproduces each convention instead of averaging them into a
 compromise.
 
 Asking for a different protocol on the same image changes the output in the way
-the protocol definitions predict — most visibly for the ventricles, where the
-three conventions include different structures.
+the protocol definitions predict (most visibly for the ventricles, where the
+three conventions include different structures).
 
 ---
 
@@ -36,12 +36,11 @@ casita-predict scan.nii.gz --protocol feta --weights casita.pt
 **Input**: any T2w brain volume as NIfTI, at any resolution or orientation. No
 preprocessing required — orientation, resampling to 0.75 mm and cropping happen
 internally. **Output**: a label map aligned with your input, matching its shape,
-voxel spacing and affine, so the two overlay directly in any viewer.
+voxel spacing and affine, so the two overlay directly in any viewer. Without
+`--output` it is written beside the input as `<name>_<protocol>_dseg.nii.gz`.
 
-Point `--protocol` at the convention you want (`feta`, `drawem9`, `bobs9`),
-independently of where the image came from. Other options: `--output`,
-`--device`, `--space model` to keep the 0.75 mm working grid, and a directory
-as input to batch over its NIfTIs.
+Point `--protocol` at the convention you want (`feta`, `drawem9`, `bobs9`). 
+Pass a directory instead of a file to batch over its NIfTIs; `casita-predict --help` lists the rest of the options.
 
 ### Container
 
@@ -115,8 +114,8 @@ rebuild with a lower one.
 ## Output labels
 
 Predictions always use this shared 9-channel space, whichever protocol you
-request. The protocol determines which channels compete and where boundaries
-fall, not which integers are written.
+request. The protocol determines which channels are segmented and where boundaries
+fall.
 
 | | structure | feta | drawem9 | bobs9 |
 |---|---|:-:|:-:|:-:|
