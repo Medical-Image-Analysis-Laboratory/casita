@@ -42,10 +42,14 @@ COPY pyproject.toml README.md LICENSE NOTICE ./
 COPY licenses/ licenses/
 COPY casita/ casita/
 
-# torch first, from the selected index; the second install then sees the
-# requirement already satisfied and pulls only monai/nibabel/numpy/scipy.
-RUN pip install --no-cache-dir "torch==${TORCH_VERSION}" --index-url ${TORCH_INDEX} \
-    && pip install --no-cache-dir .
+# torch first, from the selected index. The constraint keeps the second install
+# from replacing it: monai resolves from PyPI and a recent one requires a newer
+# torch, which would pull in whatever CUDA build PyPI ships.
+RUN echo "torch==${TORCH_VERSION}" > /tmp/constraints.txt \
+    && pip install --no-cache-dir "torch==${TORCH_VERSION}" --index-url ${TORCH_INDEX} \
+    && pip install --no-cache-dir -c /tmp/constraints.txt . \
+    && python -c "import torch; assert torch.__version__.startswith('${TORCH_VERSION}'), torch.__version__" \
+    && rm /tmp/constraints.txt
 
 # Optionally bake the released weights (~6 MB) into the image. Downloaded with
 # the interpreter that is already here, so the slim base needs no curl/wget.
