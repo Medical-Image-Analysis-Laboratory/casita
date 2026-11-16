@@ -111,6 +111,15 @@ docker run --rm --gpus all --entrypoint python casita:gpu-cu124 -c \
 `False` with a CUDA version above your driver's means the index was too new;
 rebuild with a lower one.
 
+To run that image on HPC, convert it from your local Docker daemon rather than
+from the registry, and pass `--nv` to expose the GPU:
+
+```bash
+apptainer build casita-gpu.sif docker-daemon://casita:gpu-cu124
+apptainer run --nv --bind "$PWD":/data casita-gpu.sif \
+    scan.nii.gz --protocol feta --output seg.nii.gz
+```
+
 ## Output labels
 
 Predictions always use this shared 9-channel space, whichever protocol you
